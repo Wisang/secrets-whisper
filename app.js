@@ -12,7 +12,15 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.get('/', function(req, res) {
-  res.send("<h1>Working?</h1>");
+  res.render("home");
+});
+
+app.get('/login', function(req, res) {
+  res.render("login");
+});
+
+app.get('/register', function(req, res) {
+  res.render("register");
 });
 
 app.listen(3000, function() {
