@@ -6,6 +6,8 @@ const ejs = require('ejs');
 const mongoose = require('mongoose');
 // const encrypt = require('mongoose-encryption');
 const md5 = require('md5');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const app = express();
 
@@ -38,17 +40,19 @@ app.get('/register', function(req, res) {
 });
 
 app.post('/register', function(req, res) {
-  const newUser = User({
-    email: req.body.username,
-    password: md5(req.body.password)
-  });
+  bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+    const newUser = User({
+      email: req.body.username,
+      password: hash
+    });
 
-  newUser.save(function(err) {
-    if (err) {
-      console.log(err);
-    } else {
-      res.render("secrets");
-    }
+    newUser.save(function(err) {
+      if (err) {
+        console.log(err);
+      } else {
+        res.render("secrets");
+      }
+    });
   });
 });
 
@@ -60,11 +64,13 @@ app.post('/login', function(req, res) {
       res.send(err);
     } else {
       if (user) {
-        if (user.password !== md5(req.body.password)) {
-          res.send('incorrect password');
-        } else {
-          res.render("secrets");
-        }
+        bcrypt.compare(req.body.password, user.password, function(err, result) {
+          if (result === false) {
+            res.render(err);
+          } else {
+            res.render("secrets");
+          }
+        });
       } else {
         res.send('user not found');
       }
